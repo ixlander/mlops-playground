@@ -1,1 +1,3 @@
-"# mlops-tutorial" 
+"# MLOps Project
+
+A simple MLOps pipeline for training and evaluation." 
