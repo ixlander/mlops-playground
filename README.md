@@ -1,3 +1,1 @@
-"# MLOps Project
-
-A simple MLOps pipeline for training and evaluation." 
+A simple MLOps pipeline for training and evaluation.
