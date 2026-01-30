@@ -1,11 +1,10 @@
-# Minimal Requirements - Only what's absolutely needed
-zenml==0.70.0
-mlflow==2.18.0
-scikit-learn==1.5.2
-pandas==2.2.3
-numpy==1.26.4
-click==8.1.7
-rich==13.9.4
-requests==2.32.3
-pydantic==2.10.3
-typing-extensions==4.12.2
+zenml
+mlflow
+scikit-learn
+pandas
+numpy
+click
+rich
+requests
+pydantic
+typing-extensions
