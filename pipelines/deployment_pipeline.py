@@ -30,7 +30,7 @@ def deployment_trigger(r2: float, config: DeploymentTriggerConfig) -> bool:
     return r2 >= config.min_r2
 
 
-@pipeline(enable_cache=True)
+@pipeline(enable_cache=False)
 def continuous_deployment_pipeline(
     data_path: str,
     min_r2: float = 0.2,
