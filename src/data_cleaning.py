@@ -28,7 +28,7 @@ class DataPreprocessingStrategy(DataStrategy):
                 "order_delivered_customer_date",
                 "order_estimated_delivery_date",
                 "order_purchase_timestamp",    
-            ], axis=1)
+            ], axis=1, errors='ignore')  # Added errors='ignore' to handle missing columns
             
             data["product_weight_g"].fillna(data["product_weight_g"].median(), inplace=True)
             data["product_length_cm"].fillna(data["product_length_cm"].median(), inplace=True)
@@ -38,20 +38,20 @@ class DataPreprocessingStrategy(DataStrategy):
             
             data = data.select_dtypes(include=[np.number])
             cols_to_drop = ["customer_zip_code_prefix", "order_item_id"]
-            data = data.drop(cols_to_drop, axis=1)
+            data = data.drop(cols_to_drop, axis=1, errors='ignore')
             return data
         except Exception as e:
-            logging.error("Error in processing data: {e}")
+            logging.error(f"Error in processing data: {e}")
             raise e
         
 class DivideDataStrategy(DataStrategy):
     """ 
-    Strategy for dividing data intro train and test
+    Strategy for dividing data into train and test
     """
     
     def handle_data(self, data: pd.DataFrame) -> Union[pd.DataFrame, pd.Series]:
         """ 
-        Divide data intro train and test
+        Divide data into train and test
         """
         try: 
             X = data.drop(columns=["review_score"], axis=1)
@@ -59,7 +59,7 @@ class DivideDataStrategy(DataStrategy):
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
             return X_train, X_test, y_train, y_test
         except Exception as e:
-            logging.error("Error in diving data: {}".format(e))
+            logging.error(f"Error in dividing data: {e}")
             raise e
 
 class DataCleaning:
@@ -77,10 +77,5 @@ class DataCleaning:
         try: 
             return self.strategy.handle_data(self.data)
         except Exception as e:
-            logging.error("Error in handling data {}".format(e))
-            raise e 
-    
-if __name__ == "__main__":
-    data = pd.read_csv("../data/olist_customers_dataset.csv")
-    data_cleaning = DataCleaning(data, DataPreprocessingStrategy())
-    data_cleaning.handle_data()
+            logging.error(f"Error in handling data: {e}")
+            raise e
