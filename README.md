@@ -36,7 +36,8 @@ zenml init
 # Set up MLflow integration
 zenml integration install mlflow
 zenml experiment-tracker register mlflow_tracker --flavor=mlflow
-zenml stack register mlflow_stack -a default -o default -e mlflow_tracker
+zenml model-deployer register mlflow_deployer --flavor=mlflow
+zenml stack register mlflow_stack -a default -o default -e mlflow_tracker -d mlflow_deployer
 zenml stack set mlflow_stack
 ```
 
@@ -45,31 +46,46 @@ zenml stack set mlflow_stack
 ### 1. Training Pipeline
 Run the training pipeline with your data:
 ```bash
-python run_pipeline.py --data-path /path/to/your/data.csv
-```
-
-Example:
-```bash
 python run_pipeline.py -d ./data/olist_customers_dataset.csv
 ```
 
-### 2. Deployment Pipeline
+This will:
+- Load and clean the data
+- Train a Linear Regression model
+- Evaluate with R2, MSE, and RMSE metrics
+- Log results to MLflow
+
+### 2. Deployment Pipeline (Linux/WSL only)
 Deploy the model (only if R2 >= min_r2):
 ```bash
-python run_deployment.py --config deploy --data-path /path/to/data.csv --min-r2 0.2
+python run_deployment.py --config deploy --data-path ./data/olist_customers_dataset.csv --min-r2 0.0
 ```
 
-### 3. Inference Pipeline
+**Windows Limitation**: MLflow model deployment requires daemon processes which are not supported on Windows. Use WSL or Linux for deployment features.
+
+### 3. Manual Model Serving (Windows Alternative)
+After training, serve the model manually with MLflow:
+```bash
+# View MLflow tracking UI to find run ID
+mlflow ui --backend-store-uri "file:C:\Users\Admin\AppData\Roaming\zenml\local_stores\<store-id>\mlruns"
+
+# Serve the model manually (replace <run-id> with actual run ID from MLflow UI)
+mlflow models serve -m runs:/<run-id>/model -p 5000 --no-conda
+```
+
+### 4. Inference Pipeline (Linux/WSL only)
 Run predictions on new data:
 ```bash
-python run_deployment.py --config predict --data-path /path/to/new_data.csv
+python run_deployment.py --config predict --data-path ./data/olist_customers_dataset.csv
 ```
 
-### 4. Deploy and Predict
-Do both in one command:
+### 5. View MLflow UI
+Track experiments and models:
 ```bash
-python run_deployment.py --config deploy_and_predict --data-path /path/to/data.csv --min-r2 0.2
+mlflow ui --backend-store-uri "file:C:\Users\Admin\AppData\Roaming\zenml\local_stores\<store-id>\mlruns"
 ```
+
+Access at: http://localhost:5000
 
 ## CLI Options
 
@@ -80,3 +96,14 @@ python run_deployment.py --config deploy_and_predict --data-path /path/to/data.c
 - `--config`, `-c`: Mode - `deploy`, `predict`, or `deploy_and_predict` (default: `deploy_and_predict`)
 - `--data-path`, `-d`: Path to data CSV (required)
 - `--min-r2`: Minimum R2 score to deploy model (default: 0.2)
+
+## Platform Notes
+
+### Windows
+- Training pipeline works fully
+- Model evaluation and MLflow tracking work
+- Automatic deployment service not supported (daemon limitation)
+- Manual model serving with `mlflow models serve` works as alternative
+
+### Linux/WSL/Mac
+- All features supported including automatic deployment
