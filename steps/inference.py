@@ -1,5 +1,4 @@
-from typing import Optional
-
+import logging
 import pandas as pd
 import requests
 from zenml import step
@@ -17,45 +16,68 @@ def predict_from_deployed_model(
     model_name: str = "model",
     timeout: int = 60,
 ) -> pd.DataFrame:
-    """Load the active MLflow deployed service and run predictions."""
+    """
+    Load the active MLflow deployed service and run predictions.
+    
+    Args:
+        data: Input data for prediction
+        pipeline_name: Name of the deployment pipeline
+        pipeline_step_name: Name of the deployer step
+        model_name: Name of the deployed model
+        timeout: Timeout for service startup
+        
+    Returns:
+        DataFrame with predictions
+    """
+    try:
+        deployer = MLFlowModelDeployer.get_active_model_deployer()
 
-    deployer = MLFlowModelDeployer.get_active_model_deployer()
-
-    services = deployer.find_model_server(
-        pipeline_name=pipeline_name,
-        pipeline_step_name=pipeline_step_name,
-        model_name=model_name,
-    )
-
-    if not services:
-        raise RuntimeError(
-            "No deployed MLflow service found.\n"
-            "Run deployment first:\n"
-            "py run_deployment.py --config deploy --data-path <path>"
+        services = deployer.find_model_server(
+            pipeline_name=pipeline_name,
+            pipeline_step_name=pipeline_step_name,
+            model_name=model_name,
         )
 
-    service = services[0]
-    if not isinstance(service, MLFlowDeploymentService):
-        raise TypeError("Found service is not an MLFlowDeploymentService.")
+        if not services:
+            raise RuntimeError(
+                f"No deployed MLflow service found for:\n"
+                f"  Pipeline: {pipeline_name}\n"
+                f"  Step: {pipeline_step_name}\n"
+                f"  Model: {model_name}\n"
+                f"Run deployment first:\n"
+                f"  python run_deployment.py --config deploy --data-path <path>"
+            )
 
-    if not service.is_running:
-        service.start(timeout=timeout)
+        service = services[0]
+        if not isinstance(service, MLFlowDeploymentService):
+            raise TypeError("Found service is not an MLFlowDeploymentService.")
 
-    url = service.prediction_url.rstrip("/") + "/invocations"
-    payload = {
-        "dataframe_split": {
-            "columns": list(data.columns),
-            "data": data.values.tolist(),
+        if not service.is_running:
+            logging.info(f"Starting MLflow service (timeout={timeout}s)...")
+            service.start(timeout=timeout)
+
+        url = service.prediction_url.rstrip("/") + "/invocations"
+        payload = {
+            "dataframe_split": {
+                "columns": list(data.columns),
+                "data": data.values.tolist(),
+            }
         }
-    }
 
-    resp = requests.post(url, json=payload, timeout=timeout)
-    resp.raise_for_status()
+        logging.info(f"Sending prediction request to {url}")
+        resp = requests.post(url, json=payload, timeout=timeout)
+        resp.raise_for_status()
 
-    preds = resp.json()
-    if isinstance(preds, dict) and "predictions" in preds:
-        preds = preds["predictions"]
+        preds = resp.json()
+        if isinstance(preds, dict) and "predictions" in preds:
+            preds = preds["predictions"]
 
-    out = data.copy()
-    out["prediction"] = preds
-    return out
+        out = data.copy()
+        out["prediction"] = preds
+        
+        logging.info(f"Predictions completed successfully. Shape: {out.shape}")
+        return out
+        
+    except Exception as e:
+        logging.error(f"Error in prediction: {e}")
+        raise e
