@@ -22,7 +22,8 @@ MLOps/
 │   ├── deployment_pipeline.py   # Deployment pipeline
 │   └── inference_pipeline.py    # Inference pipeline
 ├── run_pipeline.py              # Training script
-└── run_deployment.py            # Deployment/inference script
+├── run_deployment.py            # Deployment/inference script
+└── streamlit_app.py             # Streamlit web interface
 ```
 
 ## Installation
@@ -87,6 +88,20 @@ mlflow ui --backend-store-uri "file:C:\Users\Admin\AppData\Roaming\zenml\local_s
 
 Access at: http://localhost:5000
 
+### 6. Streamlit Web Interface
+Launch the interactive web application:
+```bash
+streamlit run streamlit_app.py
+```
+
+Features:
+- Model Information: View current model metrics (R2, MSE, RMSE)
+- Single Prediction: Enter feature values manually for predictions
+- Batch Prediction: Upload CSV files for bulk predictions with download
+- Train New Model: Trigger training pipeline from the web interface
+
+Access at: http://localhost:8501
+
 ## CLI Options
 
 ### run_pipeline.py
@@ -102,6 +117,7 @@ Access at: http://localhost:5000
 ### Windows
 - Training pipeline works fully
 - Model evaluation and MLflow tracking work
+- Streamlit web interface works fully
 - Automatic deployment service not supported (daemon limitation)
 - Manual model serving with `mlflow models serve` works as alternative
 
