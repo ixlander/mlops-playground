@@ -15,7 +15,7 @@ class Model(ABC):
             X_train: Training data 
             y_train: Training labels
         Returns: 
-            None
+            Trained model
         """
         pass 
     
@@ -30,7 +30,7 @@ class LinearRegressionModel(Model):
             X_train: Training data 
             y_train: Training labels
         Returns: 
-            None
+            Trained model
         """
         try: 
             reg = LinearRegression(**kwargs)
@@ -38,6 +38,5 @@ class LinearRegressionModel(Model):
             logging.info("Model training completed")
             return reg 
         except Exception as e:
-            logging.error("Error in training model: {}".format(e))
-            raise e 
-        
+            logging.error(f"Error in training model: {e}")
+            raise e
