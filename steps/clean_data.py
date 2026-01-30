@@ -17,12 +17,11 @@ def clean_df(df: pd.DataFrame) -> Tuple[
     
     Args: 
         df: Raw data
+    Returns:
         X_train: Training data
         X_test: Testing data
         y_train: Training labels
         y_test: Testing labels
-    Returns:
-
     """
     try: 
         process_strategy = DataPreprocessingStrategy()
@@ -32,9 +31,9 @@ def clean_df(df: pd.DataFrame) -> Tuple[
         divide_strategy = DivideDataStrategy()
         data_cleaning = DataCleaning(processed_data, divide_strategy)
         X_train, X_test, y_train, y_test = data_cleaning.handle_data()
-        return X_train, X_test, y_train, y_test
         logging.info("Data cleaning completed")
+        return X_train, X_test, y_train, y_test
         
     except Exception as e:
-        logging.error("Error in cleaning data: {}".format(e))
+        logging.error(f"Error in cleaning data: {e}")
         raise e
