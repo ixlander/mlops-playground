@@ -21,12 +21,12 @@ def main(data_path: str):
     tracking_uri = Client().active_stack.experiment_tracker.get_tracking_uri()
     print(f"MLflow Tracking URI: {tracking_uri}")
     
-    r2, mse, rmse = train_pipeline(data_path=data_path)
+    run = train_pipeline(data_path=data_path)
     
-    print("Training Pipeline Completed")
-    print(f"R2 Score: {r2:.4f}")
-    print(f"MSE: {mse:.4f}")
-    print(f"RMSE: {rmse:.4f}")
+    print("\nTraining Pipeline Completed!")
+    print(f"Pipeline run name: {run.name}")
+    print(f"\nView results in MLflow UI:")
+    print(f"mlflow ui --backend-store-uri '{tracking_uri}'")
 
 
 if __name__ == "__main__":
